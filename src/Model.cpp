@@ -18,6 +18,16 @@ Model::Model(const char* file)
 
     this->file = file;
     this->data = getData(); 
+
+    traverseNode(0);
+}
+
+void Model::draw(Shader& shader, Camera& camera)
+{
+    for (unsigned int i = 0; i < meshes.size(); ++i)
+    {
+        meshes[i].draw(shader, camera, matricesMeshes[i]);
+    }
 }
 
 std::vector<unsigned char> Model::getData()
@@ -43,7 +53,7 @@ std::vector<float> Model::getFloats(json accessor)
     std::string type = accessor["type"];
 
     json bufferView = this->JSON["bufferViews"][buffViewInd];
-    unsigned int byteOffset = bufferView["byteOffset"];
+    unsigned int byteOffset = bufferView.value("byteOffset", 0);
 
     unsigned int numPerVert;
     if (type == "SCALAR") numPerVert = 1;
@@ -76,7 +86,7 @@ std::vector<GLuint> Model::getIndices(json accessor)
     unsigned int componentType = accessor["componentType"];
 
     json bufferView = this->JSON["bufferViews"][buffViewInd];
-    unsigned int byteOffset = bufferView["byteOffset"];
+    unsigned int byteOffset = bufferView.value("byteOffset", 0);
 
     unsigned int beginningOfData = byteOffset + accByteOffset;
     if (componentType == 5125)
@@ -162,7 +172,7 @@ void Model::loadMesh(unsigned int meshInd)
     unsigned int posAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["POSITION"];
     unsigned int normalAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["NORMAL"];
     unsigned int texAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["TEXCOORD_0"];
-    unsigned int indAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["indices"];
+    unsigned int indAccInd = JSON["meshes"][meshInd]["primitives"][0]["indices"];
 
     std::vector<float> posVec = getFloats(JSON["accessors"][posAccInd]);
     std::vector<glm::vec3> positions = groupFloatsVec3(posVec);
@@ -176,6 +186,77 @@ void Model::loadMesh(unsigned int meshInd)
     std::vector<Texture> textures = getTextures();
 
     meshes.push_back(Mesh(vertices, indices, textures));
+}
+
+void Model::traverseNode(unsigned int nextNode, glm::mat4 matrix)
+{
+    json node = JSON["nodes"][nextNode];
+
+    glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f);
+    if (node.find("translation") != node.end())
+    {
+        float transValues[3];
+        for (unsigned int i = 0; i < node["translation"].size(); ++i)
+            transValues[i] = node["translation"][i];
+        translation = glm::make_vec3(transValues);
+    }
+    glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    if (node.find("scale") != node.end())
+    {
+        float scaleValues[3];
+        for (unsigned int i = 0; i < node["scale"].size(); ++i)
+            scaleValues[i] = (node["scale"][i]);
+        scale = glm::make_vec3(scaleValues);
+    }
+    glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    if (node.find("rotation") != node.end())
+    {
+        float rotValues[4] = 
+        {
+            node["rotation"][3],
+            node["rotation"][0],
+            node["rotation"][1],
+            node["rotation"][2]
+        };
+        rotation = glm::make_quat(rotValues);
+    }
+    glm::mat4 matNode = glm::mat4(1.0f);
+    if (node.find("matrix") != node.end())
+    {
+        float matValues[16];
+        for (unsigned int i = 0; i < node["matrix"].size(); ++i)
+            matValues[i] = node["matrix"][i];
+        matNode = glm::make_mat4(matValues);
+    }
+
+    glm::mat4 trans = glm::mat4(1.0f);
+    glm::mat4 scl = glm::mat4(1.0f);
+    glm::mat4 rot = glm::mat4(1.0f);
+
+    trans = glm::translate(trans, translation);
+    scl = glm::scale(scl, scale);
+    rot = glm::mat4_cast(rotation);
+
+    glm::mat4 matNextNode = matrix * matNode * trans * rot * scl;
+
+    if (node.find("mesh") != node.end())
+    {
+        translationsMeshes.push_back(translation);
+        scalesMeshes.push_back(scale);
+        rotationsMeshes.push_back(rotation);
+        matricesMeshes.push_back(matNextNode);
+
+        loadMesh(node["mesh"]);
+    }
+
+    if (node.find("children") != node.end())
+    {
+        for (unsigned int i = 0; i < node["children"].size(); ++i)
+        {
+            traverseNode(node["children"][i], matNextNode);
+        }
+    }
+
 }
 
 std::vector<glm::vec2> Model::groupFloatsVec2(std::vector<float> floatVec)

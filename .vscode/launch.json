@@ -7,7 +7,14 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/projOne",
             "cwd": "${workspaceRoot}/build/",
-            "preLaunchTask": "build"
+            "preLaunchTask": "build",
+        }
+    ],
+    "setupCommands": [
+        {
+            "description": "Enable break on all exceptions",
+            "text": "catch throw",
+            "ignoreFailures": true
         }
     ]
 }

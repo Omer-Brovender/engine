@@ -17,6 +17,7 @@ set(HEADER_FILES
 	src/Texture.hpp
 	src/Camera.hpp
 	src/Mesh.hpp
+	src/Model.hpp
 
 	# Namespaces
 	src/GUI.hpp
@@ -36,6 +37,7 @@ set(SOURCE_FILES
 	src/Texture.cpp
 	src/Camera.cpp
 	src/Mesh.cpp
+	src/Model.cpp
 
 	# Namespaces
 	src/GUI.cpp

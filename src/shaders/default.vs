@@ -12,13 +12,16 @@ out vec2 texCoords;
 
 uniform mat4 camMatrix;
 uniform mat4 model;
+uniform mat4 translation;
+uniform mat4 scale;
+uniform mat4 rotation;
 
 void main()
 {
-   currPos = vec3(model * vec4(aPos, 1.0f));
+   currPos = vec3(model * translation * -rotation * scale * vec4(aPos, 1.0f));
    Normal = aNormal;
    color = aColor;
-   texCoords = aTexCoords;
+   texCoords = mat2(0.0, -1.0, 1.0, 0.0) * aTexCoords; // Rotate Textures by 90deg
 
    gl_Position = camMatrix * vec4(currPos, 1.0);
 }

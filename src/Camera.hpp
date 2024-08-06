@@ -25,7 +25,7 @@ public:
     int width;
     int height;
 
-    float speed = 0.01f;
+    float speed = 0.1f;
     float sens = 100.0f;
 
     Camera(glm::vec3 pos, int width, int height);

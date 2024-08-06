@@ -60,11 +60,11 @@ void Camera::inputs(GLFWwindow* window)
     // Ctrl 
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
-        this->speed = 0.04f;
+        this->speed = 0.4f;
     } 
     else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) 
     {
-        this->speed = 0.01f;
+        this->speed = 0.1f;
     }
 
     GUI::handleMouse(window, this);
