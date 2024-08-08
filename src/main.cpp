@@ -3,6 +3,7 @@
 #include "VAO.hpp"
 #include "VBO.hpp"
 #include "Model.hpp"
+#include "FBO.hpp"
 #include <vector>
 
 const unsigned int width = 800;
@@ -49,6 +50,7 @@ int main()
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), width, height);
 
     Model model("../models/sword/scene.gltf");
+    FBO fbo(width, height);
 
     glfwSwapBuffers(window);
 
@@ -56,7 +58,8 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
-        GUI::startFrame();
+        fbo.bind();
+        GUI::startFrame(window, &camera, fbo);
 
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -66,12 +69,14 @@ int main()
 
         model.draw(shaderProgram, camera);
 
+        fbo.unbind();
         GUI::endFrame();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     shaderProgram.destroy();
+
     GUI::shutdown();
 
     glfwDestroyWindow(window);

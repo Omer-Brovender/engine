@@ -18,6 +18,7 @@ set(HEADER_FILES
 	src/Camera.hpp
 	src/Mesh.hpp
 	src/Model.hpp
+	src/FBO.hpp
 
 	# Namespaces
 	src/GUI.hpp
@@ -38,6 +39,7 @@ set(SOURCE_FILES
 	src/Camera.cpp
 	src/Mesh.cpp
 	src/Model.cpp
+	src/FBO.cpp
 
 	# Namespaces
 	src/GUI.cpp

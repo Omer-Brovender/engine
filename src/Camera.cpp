@@ -67,7 +67,7 @@ void Camera::inputs(GLFWwindow* window)
         this->speed = 0.1f;
     }
 
-    GUI::handleMouse(window, this);
+    //GUI::handleMouse(window, this);
 
 }
 
