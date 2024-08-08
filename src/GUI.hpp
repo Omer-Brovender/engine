@@ -2,12 +2,13 @@
 #define GUI_HPP
 
 #include "Camera.hpp"
+#include "FBO.hpp"
 #include <GLFW/glfw3.h>
 
 namespace GUI
 {
     void init(GLFWwindow* window);
-    void startFrame();
+    void startFrame(GLFWwindow* window, Camera* cam, FBO& fbo);
     void endFrame();
     void shutdown();
 
