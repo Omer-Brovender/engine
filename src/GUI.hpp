@@ -4,16 +4,17 @@
 #include "Camera.hpp"
 #include "FBO.hpp"
 #include <GLFW/glfw3.h>
+#include <vector>
+#include "Model.hpp"
 
 namespace GUI
 {
     void init(GLFWwindow* window);
-    void startFrame(GLFWwindow* window, Camera* cam, FBO& fbo);
+    void startFrame(GLFWwindow* window, Camera* cam, FBO& fbo, std::vector<Model>& models);
     void endFrame();
     void shutdown();
 
     bool hoveringWindow();
-    void handleMouse(GLFWwindow* window, Camera* cam);
 };
 
 #endif

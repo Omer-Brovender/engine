@@ -49,7 +49,9 @@ int main()
 
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), width, height);
 
-    Model model("../models/sword/scene.gltf");
+    std::vector<Model> models;
+    models.push_back(Model("../models/sword/scene.gltf"));
+
     FBO fbo(width, height);
 
     glfwSwapBuffers(window);
@@ -59,15 +61,16 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         fbo.bind();
-        GUI::startFrame(window, &camera, fbo);
+        GUI::startFrame(window, &camera, fbo, models);
 
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         camera.inputs(window);
-        camera.updateMatrix(45.0f, 0.1f, 100.0f);
+        camera.updateMatrix(45.0f, 0.1f, 10000.0f);
 
-        model.draw(shaderProgram, camera);
+        for (int i = 0; i < models.size(); ++i)
+            models[i].draw(shaderProgram, camera);
 
         fbo.unbind();
         GUI::endFrame();
