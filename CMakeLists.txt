@@ -9,6 +9,14 @@ find_package(OpenGL REQUIRED)
 file(GLOB IMGUI_HEADER_FILES ${CMAKE_SOURCE_DIR}/src/imgui/*.h)
 file(GLOB IMGUI_SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/imgui/*.cpp)
 
+if (WIN32)
+    set(GLFW_LIB ${CMAKE_CURRENT_SOURCE_DIR}/libraries/lib/glfw3.lib)
+endif (WIN32)
+
+if (UNIX)
+    set(GLFW_LIB ${CMAKE_CURRENT_SOURCE_DIR}/libraries/lib/libglfw3.a)
+endif (UNIX)
+
 set(HEADER_FILES
 	src/VAO.hpp
 	src/VBO.hpp
@@ -58,5 +66,5 @@ add_executable(projOne
 )
 target_link_libraries(projOne
 	${OPENGL_LIBRARY} # filled by "find_package(OpenGL REQUIRED)"
-	${CMAKE_CURRENT_SOURCE_DIR}/libraries/lib/libglfw3.a
+	${GLFW_LIB}
 )

@@ -4,16 +4,14 @@
 
 std::string getFileContents(const char* filename)
 {
+    std::cout << filename;
     std::ifstream in(filename, std::ios::binary);
     std::cout << "Loading\n";
     if(!in) throw errno;
     std::cout << "Loaded\n";
 
-    std::string contents;
-    in.seekg(0, std::ios::end);
-    contents.resize(in.tellg());
-    in.seekg(0, std::ios::beg);
-    in.read(&contents[0], contents.size());
+    std::string contents((std::istreambuf_iterator<char>(in)),
+        std::istreambuf_iterator<char>());
     in.close();
     return contents;
 }

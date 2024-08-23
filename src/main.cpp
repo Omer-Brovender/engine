@@ -50,7 +50,7 @@ int main()
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), width, height);
 
     std::vector<Model> models;
-    models.push_back(Model("../models/sword/scene.gltf"));
+    //models.push_back(Model("../models/sword/scene.gltf"));
 
     FBO fbo(width, height);
 

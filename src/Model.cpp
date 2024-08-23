@@ -37,7 +37,11 @@ std::vector<unsigned char> Model::getData()
     std::string uri = this->JSON["buffers"][0]["uri"];
 
     std::string fileStr = std::string(this->file);
+#ifdef __linux__
     std::string fileDirectory = fileStr.substr(0, fileStr.find_last_of('/') + 1);
+#elif _WIN32
+    std::string fileDirectory = fileStr.substr(0, fileStr.find_last_of('\\') + 1);
+#endif
     bytesText = getFileContents((fileDirectory + uri).c_str());
 
     std::vector<unsigned char> data(bytesText.begin(), bytesText.end());
@@ -129,7 +133,12 @@ std::vector<Texture> Model::getTextures()
     std::vector<Texture> textures;
 
     std::string fileStr = std::string(file);
+
+#ifdef __linux__
     std::string fileDir = fileStr.substr(0, fileStr.find_last_of('/') + 1);
+#elif _WIN32
+    std::string fileDir = fileStr.substr(0, fileStr.find_last_of('\\') + 1);
+#endif
 
     for (unsigned int i = 0; i < JSON["images"].size(); ++i)
     {
