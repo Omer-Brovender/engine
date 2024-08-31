@@ -5,9 +5,23 @@
 #include <iostream>
 #include <pfd/portable-file-dialogs.h>
 
+#include "glm/detail/qualifier.hpp"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
+
+static float trans_x = 0.0f;
+static float trans_y = 0.0f;
+static float trans_z = 0.0f;
+
+static float scale_x = 1.0f;
+static float scale_y = 1.0f;
+static float scale_z = 1.0f;
+
+static float rotate_x = 0.0f;
+static float rotate_y = 0.0f;
+static float rotate_z = 0.0f;
+static float rotate_w = 1.0f;
 
 void openFileMenu(ImGuiWindowFlags windowFlags, std::vector<Model>& models);
 static bool fileMenu = false;
@@ -48,11 +62,10 @@ void render(ImTextureID tex, GLFWwindow* window, Camera* cam, std::vector<Model>
 
     if (fileMenu) openFileMenu(windowFlags, models);
 
-    float widthScale   = 0.7f;
-    float heightScale  = 1.0f;
+    float gameWidthScale = 0.7f;
 
     // OpenGL Rendering Space
-    if (ImGui::BeginChild("Game", ImVec2(displaySize.x * widthScale, 0)))
+    if (ImGui::BeginChild("Game", ImVec2(displaySize.x * gameWidthScale, 0)))
     {
         ImGui::Image
         (
@@ -69,8 +82,11 @@ void render(ImTextureID tex, GLFWwindow* window, Camera* cam, std::vector<Model>
     }
     ImGui::SameLine();
 
+    float heirarchyHeightScale = 0.6f;
+
     static int selected = 0;
-    if (ImGui::BeginChild("Scene Hierarchy", ImVec2(0, 0)))
+    ImGui::BeginGroup();
+    if (ImGui::BeginChild("Scene Hierarchy", ImVec2(0, displaySize.y * heirarchyHeightScale)))
     {
         const char* title = "Scene Hierarchy";
         float windowWidth = ImGui::GetWindowSize().x;
@@ -88,40 +104,117 @@ void render(ImTextureID tex, GLFWwindow* window, Camera* cam, std::vector<Model>
             if (ImGui::Selectable(name, selected == i))
                 selected = i;
             ImGui::PopStyleVar();
+
+            Model& model = models[i];
+            model.externalTranslation = glm::vec3(trans_x, trans_y, trans_z);
+            model.externalScale       = glm::vec3(scale_x, scale_y, scale_z);
+            model.externalRotation    = glm::quat(rotate_w, rotate_x, rotate_y, rotate_z);
         }
         ImGui::EndChild();
     }
+    if (ImGui::BeginChild("Property Editor", ImVec2(0, 0), ImGuiChildFlags_Border))
+    {
+        const char* title = "Property Editor";
+        float windowWidth = ImGui::GetWindowSize().x;
+        float windowHeight = ImGui::GetWindowSize().y;
+        float textWidth = ImGui::CalcTextSize(title).x;
+
+        ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+        ImGui::Text(title);
+        ImGui::Separator();
+
+        float dragSize = 0.2f;
+
+        if (ImGui::BeginChild("Translation", ImVec2(0, windowHeight/3.0f)))
+        {
+            ImGui::Text("Translation:");
+
+            ImGui::PushItemWidth(windowWidth * dragSize);
+            ImGui::DragFloat("X", &trans_x, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::SameLine();
+            ImGui::DragFloat("Y", &trans_y, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::SameLine();
+            ImGui::DragFloat("Z", &trans_z, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::PopItemWidth();
+            
+            ImGui::EndChild();
+        }
+
+        if (ImGui::BeginChild("Scale", ImVec2(0, windowHeight/3.0f)))
+        {
+            ImGui::Text("Scale:");
+
+            ImGui::PushItemWidth(windowWidth * dragSize);
+            ImGui::DragFloat("X", &scale_x, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::SameLine();
+            ImGui::DragFloat("Y", &scale_y, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::SameLine();
+            ImGui::DragFloat("Z", &scale_z, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::PopItemWidth();
+
+            ImGui::EndChild();
+        }
+
+        dragSize = 0.15f;
+        if (ImGui::BeginChild("Rotation", ImVec2(0, 0)))
+        {
+            ImGui::Text("Rotation:");
+
+            ImGui::PushItemWidth(windowWidth * dragSize);
+            ImGui::DragFloat("X", &rotate_x, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::SameLine();
+            ImGui::DragFloat("Y", &rotate_y, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::SameLine();
+            ImGui::DragFloat("Z", &rotate_z, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::SameLine();
+            ImGui::DragFloat("W", &rotate_w, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::PopItemWidth();
+
+            ImGui::EndChild();
+        }
+
+        ImGui::EndChild();
+    }
+    ImGui::EndGroup();
     
     ImGui::End();
 }
 
 void openFileMenu(ImGuiWindowFlags windowFlags, std::vector<Model>& models)
 {
-    ImGui::SetNextWindowSize(ImVec2(500, 500));
+    ImGui::SetNextWindowSize(ImVec2(345, 345));
     if (ImGui::Begin("Open File", &fileMenu, windowFlags))
     {
-        ImGui::Text("Hello, world!");
-        if (ImGui::Button("Select File"))
+        if (ImGui::BeginChild("Explanation", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())))
         {
-            if (!pfd::settings::available())
+            ImGui::Text("Select a .gltf file to load into the 3D Viewer!");
+            ImGui::EndChild();
+        }
+        if (ImGui::BeginChild("File Select"))
+        {
+            if (ImGui::Button("Select File", ImVec2(100, 18)))
             {
-                std::cout << "Portable File Dialogs are not available on this platform.\n";
-                return;
-            }
+                if (!pfd::settings::available())
+                {
+                    std::cout << "Portable File Dialogs are not available on this platform.\n";
+                    return;
+                }
 
-            auto fileVec = pfd::open_file
-            (
-                "Choose model to read",
-                pfd::path::home(),
-                {"glTF Files (.gltf)", "*.gltf"},
-                pfd::opt::none
-            ).result();
+                auto fileVec = pfd::open_file
+                (
+                    "Choose model to read",
+                    pfd::path::home(),
+                    {"glTF Files (.gltf)", "*.gltf"},
+                    pfd::opt::none
+                ).result();
 
-            if (!fileVec.empty())
-            {
-                auto f = fileVec[0];
-                models.push_back(Model(f.c_str()));
+                if (!fileVec.empty())
+                {
+                    auto f = fileVec[0];
+                    models.push_back(Model(f.c_str()));
+                }
             }
+            ImGui::EndChild();
         }
     }
     ImGui::End();

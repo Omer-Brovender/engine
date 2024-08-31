@@ -5,6 +5,7 @@
 #include <vector>
 #include "Mesh.hpp"
 #include "Texture.hpp"
+#include "glm/fwd.hpp"
 
 using json = nlohmann::json;
 
@@ -13,6 +14,10 @@ class Model
 public:
     Model(const char* file);
     void draw(Shader& shader, Camera& camera);
+
+    glm::vec3 externalTranslation = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 externalScale = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::quat externalRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
 private:
     const char* file;

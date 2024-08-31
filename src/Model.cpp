@@ -5,6 +5,7 @@
 #include "Texture.hpp"
 #include "VBO.hpp"
 #include "glm/fwd.hpp"
+#include "glm/gtx/transform.hpp"
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
@@ -27,7 +28,7 @@ void Model::draw(Shader& shader, Camera& camera)
 {
     for (unsigned int i = 0; i < meshes.size(); ++i)
     {
-        meshes[i].draw(shader, camera, matricesMeshes[i]);
+        meshes[i].draw(shader, camera, matricesMeshes[i], externalTranslation, externalScale, externalRotation);
     }
 }
 
