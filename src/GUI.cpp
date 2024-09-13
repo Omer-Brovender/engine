@@ -1,10 +1,12 @@
 #include "GUI.hpp"
 
 #include <GLFW/glfw3.h>
+#include <cctype>
 #include <cstdio>
 #include <iostream>
 #include <pfd/portable-file-dialogs.h>
 
+#include "Model.hpp"
 #include "glm/detail/qualifier.hpp"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -84,8 +86,10 @@ void render(ImTextureID tex, GLFWwindow* window, Camera* cam, std::vector<Model>
 
     float heirarchyHeightScale = 0.6f;
 
-    static int selected = 0;
+    static int selected = -1; // Dummy value, since no model can have an index of -1
     ImGui::BeginGroup();
+    Model* model;
+    if (selected != -1) model = &models[selected];
     if (ImGui::BeginChild("Scene Hierarchy", ImVec2(0, displaySize.y * heirarchyHeightScale)))
     {
         const char* title = "Scene Hierarchy";
@@ -105,10 +109,10 @@ void render(ImTextureID tex, GLFWwindow* window, Camera* cam, std::vector<Model>
                 selected = i;
             ImGui::PopStyleVar();
 
-            Model& model = models[i];
-            model.externalTranslation = glm::vec3(trans_x, trans_y, trans_z);
-            model.externalScale       = glm::vec3(scale_x, scale_y, scale_z);
-            model.externalRotation    = glm::quat(rotate_w, rotate_x, rotate_y, rotate_z);
+            //*model = models[i];
+            //model->externalTranslation = glm::vec3(trans_x, trans_y, trans_z);
+            //model->externalScale       = glm::vec3(scale_x, scale_y, scale_z);
+            //model->externalRotation    = glm::quat(rotate_w, rotate_x, rotate_y, rotate_z);
         }
         ImGui::EndChild();
     }
@@ -123,54 +127,57 @@ void render(ImTextureID tex, GLFWwindow* window, Camera* cam, std::vector<Model>
         ImGui::Text(title);
         ImGui::Separator();
 
-        float dragSize = 0.2f;
-
-        if (ImGui::BeginChild("Translation", ImVec2(0, windowHeight/3.0f)))
+        if (selected != -1)
         {
-            ImGui::Text("Translation:");
+            float dragSize = 0.2f;
 
-            ImGui::PushItemWidth(windowWidth * dragSize);
-            ImGui::DragFloat("X", &trans_x, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::SameLine();
-            ImGui::DragFloat("Y", &trans_y, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::SameLine();
-            ImGui::DragFloat("Z", &trans_z, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::PopItemWidth();
-            
-            ImGui::EndChild();
-        }
+            if (ImGui::BeginChild("Translation", ImVec2(0, windowHeight/3.0f)))
+            {
+                ImGui::Text("Translation:");
 
-        if (ImGui::BeginChild("Scale", ImVec2(0, windowHeight/3.0f)))
-        {
-            ImGui::Text("Scale:");
+                ImGui::PushItemWidth(windowWidth * dragSize);
+                ImGui::DragFloat("X", &model->externalTranslation.x, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::SameLine();
+                ImGui::DragFloat("Y", &model->externalTranslation.y, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::SameLine();
+                ImGui::DragFloat("Z", &model->externalTranslation.z, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::PopItemWidth();
+                
+                ImGui::EndChild();
+            }
 
-            ImGui::PushItemWidth(windowWidth * dragSize);
-            ImGui::DragFloat("X", &scale_x, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::SameLine();
-            ImGui::DragFloat("Y", &scale_y, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::SameLine();
-            ImGui::DragFloat("Z", &scale_z, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::PopItemWidth();
+            if (ImGui::BeginChild("Scale", ImVec2(0, windowHeight/3.0f)))
+            {
+                ImGui::Text("Scale:");
 
-            ImGui::EndChild();
-        }
+                ImGui::PushItemWidth(windowWidth * dragSize);
+                ImGui::DragFloat("X", &model->externalScale.x, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::SameLine();
+                ImGui::DragFloat("Y", &model->externalScale.y, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::SameLine();
+                ImGui::DragFloat("Z", &model->externalScale.z, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::PopItemWidth();
 
-        dragSize = 0.15f;
-        if (ImGui::BeginChild("Rotation", ImVec2(0, 0)))
-        {
-            ImGui::Text("Rotation:");
+                ImGui::EndChild();
+            }
 
-            ImGui::PushItemWidth(windowWidth * dragSize);
-            ImGui::DragFloat("X", &rotate_x, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::SameLine();
-            ImGui::DragFloat("Y", &rotate_y, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::SameLine();
-            ImGui::DragFloat("Z", &rotate_z, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::SameLine();
-            ImGui::DragFloat("W", &rotate_w, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::PopItemWidth();
+            dragSize = 0.15f;
+            if (ImGui::BeginChild("Rotation", ImVec2(0, 0)))
+            {
+                ImGui::Text("Rotation:");
 
-            ImGui::EndChild();
+                ImGui::PushItemWidth(windowWidth * dragSize);
+                ImGui::DragFloat("X", &model->externalRotation.x, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::SameLine();
+                ImGui::DragFloat("Y", &model->externalRotation.y, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::SameLine();
+                ImGui::DragFloat("Z", &model->externalRotation.z, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::SameLine();
+                ImGui::DragFloat("W", &model->externalRotation.w, 0.01f, 0.0f, 0.0f, "%.2f");
+                ImGui::PopItemWidth();
+
+                ImGui::EndChild();
+            }
         }
 
         ImGui::EndChild();
@@ -208,7 +215,7 @@ void openFileMenu(ImGuiWindowFlags windowFlags, std::vector<Model>& models)
                     pfd::opt::none
                 ).result();
 
-                if (!fileVec.empty())
+                if (!fileVec.empty() && fileVec[0].find_last_of(".gltf") != std::string::npos)
                 {
                     auto f = fileVec[0];
                     models.push_back(Model(f.c_str()));
